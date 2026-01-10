@@ -9,8 +9,23 @@ let livre
 let firstPlan, secondPlan, backgroundPlan
 let imageCouverture
 
+//Affichage de façon différente pour le dos du livre (d'où la chaine vide)
+const aTexte = [
+    'BIENVENUE DANS UNE HISTOIRE MAGIQUE ET MERVEILLEUSE! ',
+    'SOUS LES ETOILES, UNE PANNE DANS LE DESERT SCELLE UNE RENCONTRE MAGIQUE',
+    "VOGUEZ D'ASTEROIDE EN ASTEROIDE A LA DECOUVERTE DE LEURS CURIEUX HABITANTS",
+    'AU CREUX DES DUNES, APPRIVOISEZ LE SECRET DE CE QUI EST INVISBLE POUR LES YEUX',
+    '',
+]
+
+//Gestion de la taille de lazone de texte -> Evite de se superposer aux éléments de fond
+const aMaxWidth = [900, 500, 300, 900, 0]
+//Variables pour animation de texte
+let textAlpha = 0
+let currentTextPage = -1
+
 function preload() {
-    // Charger l'image avant le setup
+    // Charger l'image avant la fonction setup
     imageCouverture = loadImage('couverture_img.jpg')
 }
 
@@ -34,20 +49,33 @@ function draw() {
         case 0:
             backgroundPlan.clear()
             setupScene0(backgroundPlan)
+            showTexte(0)
             break
         case 1:
             backgroundPlan.clear()
+            setupScene1(backgroundPlan)
+            showTexte(1)
             break
         case 2:
             backgroundPlan.clear()
+            setupScene2(backgroundPlan)
+            showTexte(2)
             break
         case 3:
             backgroundPlan.clear()
+            setupScene3(backgroundPlan)
+            showTexte(3)
             break
         case 4:
             backgroundPlan.clear()
-            setupScene4(backgroundPlan)
+            setupScene4(backgroundPlan, livre)
             break
+    }
+    //Si on atteint la page de fin, un bouton apparait pour recommencer
+    if (livre.numPage === livre.countPage) {
+        showScene4ResetButton(livre)
+    } else {
+        hideScene4ResetButton()
     }
     livre.affichePageLivre(secondPlan)
 
@@ -101,4 +129,30 @@ function mousePressed() {
     if (dist(mouseX, mouseY, tailleBtn, center[1]) < tailleBtn / 2) {
         livre.changePage(-1)
     }
+}
+
+function showTexte(numPage) {
+    // Réinitialiser si changement de page
+    if (currentTextPage !== numPage) {
+        textAlpha = 0
+        currentTextPage = numPage
+    }
+
+    // Animer l'apparition du texte
+    if (textAlpha < 255) {
+        textAlpha = min(textAlpha + 3, 255)
+    }
+
+    displayAnimatedText(firstPlan, aTexte[numPage], numPage, textAlpha)
+}
+
+function displayAnimatedText(plan, texte, numPage, textAlpha) {
+    plan.textSize(18)
+    plan.textAlign(CENTER, TOP)
+    plan.fill(255, textAlpha)
+
+    const y = 50
+    const maxWidth = aMaxWidth[numPage]
+
+    plan.text(texte, tailleCanva[0] / 2 - maxWidth / 2, y, maxWidth)
 }

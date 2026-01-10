@@ -3,15 +3,15 @@
 // (Pour éviter le cas de la redéclaration de variable)
 
 //Tableau d'étoiles
-let aStars1 = []
-let isInit1 = false
+let aStars0 = []
+let isInit0 = false
 
 function setupScene0(plan) {
     // On initialise les étoiles une seule fois (positions, vitesses, scintillement)
-    if (!isInit1) {
+    if (!isInit0) {
         const numStars = 150
         for (let i = 0; i < numStars; i++) {
-            aStars1.push({
+            aStars0.push({
                 x: random(plan.width),
                 y: random(plan.height),
                 rayon: random(2, 2.6),
@@ -21,7 +21,7 @@ function setupScene0(plan) {
                 sSpeed: random(0.04 + 0.01),
             })
         }
-        isInit1 = true
+        isInit0 = true
     }
 
     // Dégradé du ciel (bleu foncé vers violet) basé sur la taille du plan
@@ -51,7 +51,7 @@ function setupScene0(plan) {
 
     // Étoiles animées (descente lente + scintillement)
     plan.noStroke()
-    for (let star of aStars1) {
+    for (let star of aStars0) {
         // Mise à jour de la position
         star.y += star.vitesseY
         if (star.y > plan.height + 2) {

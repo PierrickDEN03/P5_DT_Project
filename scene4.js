@@ -7,9 +7,12 @@ const PHRASE = "L'ESSENTIEL EST INVISIBLE POUR LES YEUX"
 let aStars4 = []
 let isInit4 = false
 
-// Lettres
+// Tableau de lettres
 let aLetters4 = []
 let lettersInit = false
+
+//Bouton pour revenir à la page de couverture
+let resetPageButton4 = null
 
 function setupScene4(plan) {
     // Initialisation des étoiles de fond (comme la scène 0)
@@ -37,7 +40,7 @@ function setupScene4(plan) {
         lettersInit = true
     }
 
-    // Find dégradé (cf scène 0)
+    // Fond dégradé (cf scène 0)
     for (let y = 0; y < plan.height; y++) {
         let r = map(y, 0, plan.height, 10, 30)
         let g = map(y, 0, plan.height, 15, 30)
@@ -102,5 +105,31 @@ function initLetters(plan) {
             phase: random(6),
             speed: random(0.01, 0.04),
         })
+    }
+}
+
+//Le bouton de réinitialisation doit être crée qu'une seule fois
+//Il est créé sur le plan principal du sketch (et non sur le plan de la scène courante)
+function showScene4ResetButton(livre) {
+    const buttonWidth = 190
+    if (!resetPageButton4) {
+        resetPageButton4 = createButton('Retour à la couverture')
+        resetPageButton4.size(buttonWidth, 40)
+        //Au clic, on recommence à la page 0
+        resetPageButton4.mousePressed(() => {
+            livre.numPage = 0
+        })
+    }
+
+    const posBtnY = 160
+    //On centre le bouton
+    resetPageButton4.position(tailleCanva[0] / 2 - buttonWidth / 2 + 10, posBtnY)
+    resetPageButton4.show()
+}
+
+// Fonction pour cacher le bouton quand on quitte la scène 4
+function hideScene4ResetButton() {
+    if (resetPageButton4) {
+        resetPageButton4.hide()
     }
 }

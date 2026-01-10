@@ -21,9 +21,9 @@ class Livre {
 
     affichePageLivre() {
         // Le centre exacte du livre (entre les pages)
-        const centerLivre = [center[0], center[1] + 150]
+        const centerLivre = [center[0], center[1] + 180]
         const largeur = 250
-        const hauteur = 150
+        const hauteur = 130
         const courbure = 15
 
         this.plan.clear()
