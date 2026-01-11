@@ -16,11 +16,15 @@ const aDesert = {
 function setupScene3(plan) {
     hauteur = plan.height
     largeur = plan.width
+    // Initialisation au premier appel des étoiles
+    if (!isInit3) {
+        initEtoiles(plan, etoiles3)
+        isInit3 = true
+    }
 
     // Dessiner tous les éléments
     dessinerDegradeCrepuscule(plan)
-    //Création des étoiles et affichage (cf fichier draw_etoiles)
-    initEtoiles(plan, etoiles3)
+    //affichage (cf fichier draw_etoiles)
     dessinerEtoiles(plan, etoiles3)
 
     dessinerDesert(plan)
