@@ -1,107 +1,32 @@
 // SCÈNE 2 : PAGE 2
 
-// === ÉTAT DE LA SCÈNE ===
+// Variables globales
 let etoiles2 = []
 let meteores2 = []
-const MAX_METEORES_2 = 80
 let isInit2 = false
 
-// === FONCTION PRINCIPALE ===
 function setupScene2(plan) {
-    // Initialisation au premier appel
+    // Initialisation au premier appel des étoiles
     if (!isInit2) {
-        initEtoiles2(plan)
+        initEtoiles(plan, etoiles2)
         isInit2 = true
     }
-
     // Fond du ciel nocturne
     plan.background(8, 10, 18)
 
-    //Création des étoiles et affichage (cf fichier draw_etoiles)
-    initEtoiles(plan, etoiles2)
+    //affichage (cf fichier draw_etoiles)
     dessinerEtoiles(plan, etoiles2)
 
     //Cf fichier draw_meteores
     dessinerPluieDeMeteores(plan)
+
     dessinerAsteroide2(plan)
+
+    //Pour les monsieurs
     dessinerAsteroïdesFlottants(plan)
 
-    //Fonction utilitaire initialisant le petit prince selon le fichier drawPrince.js
     initPrinceScene2(plan)
     assombrissement(plan)
-}
-
-// === INITIALISATION ===
-function initEtoiles2(plan) {
-    etoiles2 = []
-    meteores2 = []
-
-    const nbEtoiles = 220
-    for (let i = 0; i < nbEtoiles; i++) {
-        etoiles2.push({
-            x: random(plan.width),
-            y: random(plan.height),
-            rayon: random(0.8, 2.2),
-            alpha: random(120, 220),
-            phase: random(TWO_PI),
-            vitesseScintillement: random(0.5, 1.5),
-            scintille: random() < 0.15,
-        })
-    }
-}
-
-// === CIEL ÉTOILÉ ===
-function dessinerCielEtoile2(plan) {
-    plan.noStroke()
-
-    for (let etoile of etoiles2) {
-        // Animation du scintillement
-        if (etoile.scintille) {
-            etoile.phase += 0.02 * etoile.vitesseScintillement
-        }
-
-        // Calcul de l'alpha avec scintillement
-        const variation = etoile.scintille ? sin(etoile.phase) * 65 : 0
-        const alpha = etoile.alpha + variation
-
-        // Taille variable si l'étoile scintille
-        const taille = etoile.scintille ? etoile.rayon + 0.6 * (0.5 + sin(etoile.phase)) : etoile.rayon
-
-        // Dessiner l'étoile
-        plan.fill(255, 255, 255, alpha)
-        plan.circle(etoile.x, etoile.y, taille)
-
-        // Halo pour les étoiles qui scintillent
-        if (etoile.scintille) {
-            plan.fill(255, 255, 255, alpha * 0.35)
-            plan.circle(etoile.x, etoile.y, taille * 2.2)
-        }
-    }
-}
-
-// Pluie de météores
-function dessinerPluieDeMeteores2(plan) {
-    // Apparition aléatoire de nouveaux météores
-    const chanceApparition = 0.08
-    if (random() < chanceApparition && meteores2.length < MAX_METEORES_2) {
-        meteores2.push(creerMeteore(plan))
-    }
-
-    // Mettre à jour et dessiner les météores (en sens inverse pour pouvoir supprimer)
-    for (let i = meteores2.length - 1; i >= 0; i--) {
-        const meteore = meteores2[i]
-
-        // Animation
-        animerMeteore(meteore)
-
-        // Dessin
-        dessinerMeteore(plan, meteore)
-
-        // Suppression si mort
-        if (meteoreMort(plan, meteore)) {
-            meteores2.splice(i, 1)
-        }
-    }
 }
 
 function dessinerAsteroide2(plan) {
@@ -161,7 +86,7 @@ function dessinerPersonnage(plan, x, y, echelle, type) {
     plan.stroke(50, 45, 60, 200)
     plan.strokeWeight(2)
 
-    // === TYPE 0 : Géographe avec compas ===
+    // Géographe avec compas
     if (type === 0) {
         // Corps
         plan.fill(70, 70, 90)
@@ -183,7 +108,7 @@ function dessinerPersonnage(plan, x, y, echelle, type) {
             plan.point(posX, posY)
         }
     }
-    // === TYPE 1 : Vaniteux avec couronne ===
+    // Vaniteux avec couronne
     else if (type === 1) {
         // Corps
         plan.fill(80, 80, 100)
@@ -205,7 +130,7 @@ function dessinerPersonnage(plan, x, y, echelle, type) {
             plan.point(echelle * 0.7 + i * 4, -echelle * 0.1 + sin(temps + i) * 3)
         }
     }
-    // === TYPE 2 : Buveur avec bouteille ===
+    //Buveur avec bouteille
     else if (type === 2) {
         // Corps
         plan.fill(70, 70, 90)
@@ -224,7 +149,7 @@ function dessinerPersonnage(plan, x, y, echelle, type) {
         plan.fill(70, 150, 120)
         plan.rect(bouteilleX + echelle * 0.05, bouteilleY - echelle * 0.1, echelle * 0.08, echelle * 0.12, 3)
     }
-    // === TYPE 3 : Businessman avec chiffres ===
+    // Businessman avec chiffres
     else if (type === 3) {
         // Corps
         plan.fill(60, 60, 80)
@@ -248,7 +173,7 @@ function dessinerPersonnage(plan, x, y, echelle, type) {
         plan.textAlign(LEFT, CENTER)
         plan.text('127', echelle * 0.2, echelle * 0.05 + sin(temps) * 3)
     }
-    // === TYPE 4 : Allumeur avec lampadaire ===
+    // Allumeur avec lampadaire
     else if (type === 4) {
         // Corps
         plan.fill(70, 70, 90)
@@ -271,7 +196,7 @@ function dessinerPersonnage(plan, x, y, echelle, type) {
             plan.ellipse(echelle * 0.4, -echelle * 0.4, echelle * 0.4, echelle * 0.4)
         }
     }
-    // === TYPE 5 : Personnage avec télescope ===
+    //Personnage avec télescope
     else {
         // Corps
         plan.fill(60, 60, 80)

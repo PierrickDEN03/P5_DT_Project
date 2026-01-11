@@ -30,7 +30,7 @@ class Livre {
         this.plan.stroke(0)
         this.plan.strokeWeight(2)
 
-        // Si on est sur la page de couverture (page 0)
+        // Si on est sur la page de couverture ou dos du livre (page 0 et 4)
         if ((this.numPage === 0 || this.numPage === this.countPage) && !this.isAnimating) {
             this.couvertureLivre(centerLivre, largeur, hauteur, courbure)
         }
@@ -140,7 +140,6 @@ class Livre {
         // Définir les positions selon le côté
         const signe = cote === 'gauche' ? -1 : 1
 
-        const bordExterieur = centerLivre[0] + signe * largeur
         const bordInterieur = centerLivre[0] + signe * courbure
 
         // Paramètres des lignes
@@ -230,7 +229,7 @@ class Livre {
         const largeurPage = largeur - courbure
         const largeurVisible = largeurPage * Math.cos(angle)
 
-        // CORRECTION : La profondeur doit être NÉGATIVE pour que la page se lève vers le haut
+        // La profondeur doit être NÉGATIVE pour que la page se lève vers le haut
         const profondeurPage = -largeurPage * Math.sin(angle) * 0.3 // Effet 3D inversé
 
         // Déterminer la couleur selon l'angle (recto blanc, verso gris clair)
@@ -353,13 +352,12 @@ class Livre {
         // Bord inférieur horizontal
         this.plan.line(bordGaucheBas, centerLivre[1] + hauteur - profondeur, bordDroitBas, centerLivre[1] + hauteur - profondeur)
 
-        // Ajouter le contenu (image ou texte)
+        // Image de couverture avec perspective
         if (estCouverture) {
-            // Image de couverture avec perspective
-
+            //Il aurait été plus facile de lefaire avec une image avec le format WebGL mais nous n'avions pas trouvé
             const hauteurPageImage = (hauteur - profondeur) * 2
 
-            // Découper l'image en bandes horizontales pour simuler la perspective
+            // On découpe l'image en bandes horizontales pour simuler la perspective
             const nbBandes = 50
             const hauteurBande = hauteurPageImage / nbBandes
             const hauteurBandeImg = this.imageCouverture.height / nbBandes

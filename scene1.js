@@ -1,16 +1,16 @@
 // SCÈNE 1 : PAGE 1
 
-// === ÉTAT DE LA SCÈNE ===
+//Variables globales
 let etoiles1 = []
 let meteores1 = []
 const MAX_METEORES = 80
 let isInit1 = false
 
-// === FONCTION PRINCIPALE ===
+// Fonction principale
 function setupScene1(plan) {
-    // Initialisation au premier appel
+    // Initialisation au premier appel des étoiles
     if (!isInit1) {
-        initEtoiles(plan)
+        initEtoiles(plan, etoiles1)
         isInit1 = true
     }
 
@@ -18,8 +18,8 @@ function setupScene1(plan) {
     plan.background(8, 10, 18)
 
     // Dessiner tous les élément
-    //Création des étoiles et affichage (cf fichier draw_etoiles)
-    initEtoiles(plan, etoiles1)
+
+    // affichage des étoiles (cf fichier draw_etoiles)
     dessinerEtoiles(plan, etoiles1)
 
     //Cf fichier draw_meteores
@@ -30,31 +30,6 @@ function setupScene1(plan) {
     initPrinceScene1(plan)
     dessinerAvion(plan)
     assombrissement(plan)
-}
-
-// Pluie du météores
-function dessinerPluieDeMeteores(plan) {
-    // Apparition aléatoire de nouveaux météores
-    const chanceApparition = 0.08
-    if (random() < chanceApparition && meteores1.length < MAX_METEORES) {
-        meteores1.push(creerMeteore(plan))
-    }
-
-    // Mettre à jour et dessiner les météores (en sens inverse pour pouvoir supprimer)
-    for (let i = meteores1.length - 1; i >= 0; i--) {
-        const meteore = meteores1[i]
-
-        // Animation
-        animerMeteore(meteore)
-
-        // Dessin
-        dessinerMeteore(plan, meteore)
-
-        // Suppression si mort
-        if (meteoreMort(plan, meteore)) {
-            meteores1.splice(i, 1)
-        }
-    }
 }
 
 function dessinerAsteroide(plan) {

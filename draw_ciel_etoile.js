@@ -3,7 +3,8 @@
 
 //Initialise un tableau d'étoiles avec des propriétés aléatoires
 function initEtoiles(plan, etoiles) {
-    etoiles = []
+    // Vider le tableau passé en argument sans perdre la référence
+    etoiles.length = 0
     const nbEtoiles = 220
     for (let i = 0; i < nbEtoiles; i++) {
         etoiles.push({

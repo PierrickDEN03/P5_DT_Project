@@ -31,7 +31,7 @@ function preload() {
 
 function setup() {
     createCanvas(tailleCanva[0], tailleCanva[1])
-    //2e plan pour le livre et l'image
+    //2e plan pour le livre
     secondPlan = createGraphics(tailleCanva[0], tailleCanva[1])
     //Premier plan pour les btn
     firstPlan = createGraphics(tailleCanva[0], tailleCanva[1])

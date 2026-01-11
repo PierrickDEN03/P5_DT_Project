@@ -111,7 +111,7 @@ function dessinerPetitPrince(plan, x, y, echelle = 1) {
     plan.bezierVertex(55, 20, 50, -40, 40, -78)
     plan.endShape(CLOSE)
 
-    // === MAINS ===
+    // Mains
     plan.fill(...couleurPeau)
     plan.stroke(40)
     plan.strokeWeight(3)

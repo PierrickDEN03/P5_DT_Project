@@ -1,6 +1,6 @@
 // Fichier pour gérer l'animation des pluies de météores (utilisé dans les scènes 1 et 2)
 
-//Fonction permettant de créer un météore avec des données aléatoires
+//Fonction permettant de créer un météore avec des données aléatoires (angle, couleur, vitesse...)
 function creerMeteore(plan) {
     const angle = random(radians(20), radians(40))
     const vitesse = random(12, 22)
@@ -78,4 +78,29 @@ function dessinerMeteore(plan, meteore) {
 //Vérifie si un météore est "mort" (hors écran ou vie épuisée / éteint)
 function meteoreMort(plan, meteore) {
     return meteore.vie <= 0 || meteore.x > plan.width + 400 || meteore.y > plan.height + 400
+}
+
+// Pluie du météores
+function dessinerPluieDeMeteores(plan) {
+    // Apparition aléatoire de nouveaux météores
+    const chanceApparition = 0.08
+    if (random() < chanceApparition && meteores1.length < MAX_METEORES) {
+        meteores1.push(creerMeteore(plan))
+    }
+
+    // Mettre à jour et dessiner les météores (en sens inverse pour pouvoir supprimer)
+    for (let i = meteores1.length - 1; i >= 0; i--) {
+        const meteore = meteores1[i]
+
+        // Animation
+        animerMeteore(meteore)
+
+        // Dessin
+        dessinerMeteore(plan, meteore)
+
+        // Suppression si mort
+        if (meteoreMort(plan, meteore)) {
+            meteores1.splice(i, 1)
+        }
+    }
 }
