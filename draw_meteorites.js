@@ -1,6 +1,8 @@
 // Fichier pour gérer l'animation des pluies de météores (utilisé dans les scènes 1 et 2)
 
 //Fonction permettant de créer un météore avec des données aléatoires (angle, couleur, vitesse...)
+const MAX_METEORES = 80
+
 function creerMeteore(plan) {
     const angle = random(radians(20), radians(40))
     const vitesse = random(12, 22)

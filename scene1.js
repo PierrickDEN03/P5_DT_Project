@@ -3,8 +3,14 @@
 //Variables globales
 let etoiles1 = []
 let meteores1 = []
-const MAX_METEORES = 80
 let isInit1 = false
+
+// Animation de l'avion
+let avionAnimating = false
+let avionAnimProgress = 0
+let avionAnimType = 'none' // 'bouge' ou 'helice'
+// Coordonnées de la zone de l'avion [x1, y1, x2, y2]
+let aCoordAvion = [0, 0, 0, 0]
 
 // Fonction principale
 function setupScene1(plan) {
@@ -54,17 +60,67 @@ function dessinerAvion(plan) {
     const posY = plan.height * 0.2
     const echelle = plan.width * 0.00025
 
+    // Définir la zone cliquable de l'avion
+    const avionLargeur = 200
+    const avionHauteur = 100
+    const distSecurite1 = 30 //Marges supplémentaires pour bien qu'on clique sur l'avion
+    aCoordAvion[0] = posX - distSecurite1
+    aCoordAvion[1] = posY - distSecurite1
+    aCoordAvion[2] = posX + avionLargeur + distSecurite1
+    aCoordAvion[3] = posY + avionHauteur + distSecurite1
+
+    // Zone cliquable pour l'avion
+    //plan.fill(255, 255, 255, 100)
+    //plan.noStroke()
+    //plan.rect(aCoordAvion[0], aCoordAvion[1], aCoordAvion[2] - aCoordAvion[0], aCoordAvion[3] - aCoordAvion[1])
+
+    // Gestion de l'animation
+    if (avionAnimating) {
+        avionAnimProgress += 0.02
+
+        if (avionAnimProgress >= 1) {
+            //Si l'animation est finit, on change d'animation en redmarrant du debut ou on arrete
+            if (avionAnimType === 'bouge') {
+                avionAnimType = 'helice'
+                avionAnimProgress = 0
+            } else if (avionAnimType === 'helice' && avionAnimProgress < 1) {
+                // Continue la rotation de l'hélice, rien besoin de faire car on a changé d'animation avant
+            } else {
+                //Si l'animation de l'helice est terminée
+                avionAnimating = false
+                avionAnimType = 'none'
+                avionAnimProgress = 0
+            }
+        }
+    }
+
     plan.push()
     plan.translate(posX, posY)
+
+    // Variable d'animation pour gérer la position / rotation
+    let translateY = 0
+    let rotationHelice = 0
+
+    if (avionAnimType === 'bouge' && avionAnimProgress < 1) {
+        // Animation "bouge" : monte / descend 3 fois de 15px
+        translateY = sin(avionAnimProgress * PI * 3) * 15
+    } else if (avionAnimType === 'helice') {
+        // Si animation de l'helice :20 tours de l'helice
+        rotationHelice = avionAnimProgress * PI * 20
+    }
+
+    //On bouge le plan courant de l'avion en fonction de l'animation
+    //Si pas d'animation -> 0 donc bouge pas
+    plan.translate(0, translateY)
     plan.scale(echelle)
     plan.rotate(-0.18)
 
     // Palette de couleurs
     const ROUGE = [235, 55, 65]
     const BLANC = [250]
-    const NOIR = [25]
+    const NOIR = [25, 25, 25]
     const VITRE = [150, 215, 240]
-    const GRIS = [90]
+    const GRIS = [90, 90, 90]
 
     // Configuration du trait
     plan.stroke(...NOIR)
@@ -88,9 +144,10 @@ function dessinerAvion(plan) {
     plan.fill(...NOIR)
     plan.rect(90, 115, 110, 110, 55)
 
-    // Hélice
+    // Hélice (en fonction de l'animation qui change l'inclinaison)
     plan.push()
     plan.translate(90, 170)
+    plan.rotate(rotationHelice)
     plan.fill(...GRIS)
     plan.ellipse(0, 0, 20, 20)
     plan.rect(-150, -7, 140, 14, 7)
@@ -142,4 +199,20 @@ function assombrissement(plan) {
     plan.noStroke()
     plan.fill(0, 0, 0, 120)
     plan.rect(0, 0, plan.width, plan.height)
+}
+
+// Détection de clic sur l'avion (à appeler depuis sketch.js dans mousePressed)
+function clicAvionScene1(mouseX, mouseY) {
+    console.log('click')
+    const estDansAvion = mouseX > aCoordAvion[0] && mouseX < aCoordAvion[2] && mouseY > aCoordAvion[1] && mouseY < aCoordAvion[3]
+    if (estDansAvion && !avionAnimating) {
+        console.log('avion')
+        avionAnimating = true
+        //Commence par faire bouger l'avion
+        avionAnimType = 'bouge'
+        avionAnimProgress = 0
+        return true
+    }
+
+    return false
 }

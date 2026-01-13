@@ -1,15 +1,26 @@
 // SCÈNE 3 : PAGE 3
-//Par simplicité, le renard, l'avion et le serpent sont dessinés avec des valeurs absolus
+//Par simplicité, le renard, l'avion et le serpent sont dessinés avec des valeurs absolus (et peut etre redimensionné si jamais)
 
 // État de la scène
 let etoiles3 = []
 let isInit3 = false
 let hauteur, largeur
 
-// Paramètres du désert (largeur et hauteur de référence)
+// Animation du serpent
+let aCoordSerpent = [0, 0, 0, 0]
+let serpentAnimating = false
+let serpentAnimProgress = 0
+
+// Animation du renard
+let aCoordRenard = [0, 0, 0, 0]
+let renardAnimating = false
+let renardAnimProgress = 0
+let renardAnimType = 'none' // type d'animation :'queue' ou 'sautille'
+
+// Paramètres du désert (multiplicateur largeur et hauteur )
 const aDesert = {
-    largeur: 1.2, // Multiplicateur de la largeur du plan
-    hauteur: 1.2, // Multiplicateur de la hauteur du plan
+    largeur: 1.2,
+    hauteur: 1.2,
 }
 
 // Fonction principale
@@ -97,8 +108,42 @@ function initPrinceScene3(plan) {
 
 // Renard assis
 function dessinerRenard(plan, x, y, echelle) {
+    // Définir la zone cliquable du renard
+    const renardLargeur = 140 * echelle
+    const renardHauteur = 120 * echelle
+    const distSecurite = 20
+    aCoordRenard[0] = x - renardLargeur / 2 - distSecurite
+    aCoordRenard[1] = y - renardHauteur - distSecurite
+    aCoordRenard[2] = x + renardLargeur / 2 + distSecurite
+    aCoordRenard[3] = y + renardHauteur / 2 + distSecurite
+
+    // Gestion de l'animation
+    if (renardAnimating) {
+        renardAnimProgress += 0.02
+
+        if (renardAnimProgress >= 1) {
+            if (renardAnimType === 'queue') {
+                // Passer à la phase de sautillement après celle de la queu
+                renardAnimType = 'sautille'
+                renardAnimProgress = 0
+            } else {
+                // Fin de l'animation (après la queue et le saut )
+                renardAnimating = false
+                renardAnimProgress = 0
+                renardAnimType = 'none'
+            }
+        }
+    }
+
+    // Translation verticale pour le sautillement (se déplace de 10px)
+    let translateY = 0
+    if (renardAnimType === 'sautille') {
+        // 3 petits sauts pour le renard
+        translateY = sin(renardAnimProgress * PI * 6) * -10
+    }
+
     plan.push()
-    plan.translate(x, y)
+    plan.translate(x, y + translateY)
     plan.scale(echelle)
 
     // Configuration du trait
@@ -120,7 +165,19 @@ function dessinerRenard(plan, x, y, echelle) {
     plan.fill(240, 200, 170)
     plan.ellipse(-10, 10, 60, 40)
 
-    // Queue touffue
+    // Animation de la queue (balancement)
+    let rotationQueue = 0
+    if (renardAnimType === 'queue') {
+        //Pour le balancement de la queue, on fait 2 tours
+        rotationQueue = sin(renardAnimProgress * PI * 4) * 0.3
+    }
+
+    plan.push() //Début pour la queue
+    plan.translate(60, 10)
+    plan.rotate(rotationQueue) // Rotation de la queueen fonction de la progression (ou 0 sinon)
+    plan.translate(-60, -10)
+
+    // Queue
     plan.fill(200, 110, 70)
     plan.beginShape()
     plan.vertex(60, 10)
@@ -137,11 +194,40 @@ function dessinerRenard(plan, x, y, echelle) {
     plan.vertex(80, 70)
     plan.endShape(CLOSE)
 
+    plan.pop() // Pour la fin de la rotation de la queue
+
     plan.pop()
 }
 
-// Serpent ondulant
+// Serpent
 function dessinerSerpent(plan, x, y, echelle) {
+    // Coordonnées de la tête du serpent [x, y]
+    const aCoordTeteSerpent = [0, 0]
+
+    // Définir la zone cliquable du serpent
+    const serpentLargeur = 280 * echelle
+    const serpentHauteur = 60 * echelle
+    const distSecurite = 20
+    aCoordSerpent[0] = x - serpentLargeur / 2 - distSecurite
+    aCoordSerpent[1] = y - serpentHauteur / 2 - distSecurite
+    aCoordSerpent[2] = x + serpentLargeur + distSecurite
+    aCoordSerpent[3] = y + serpentHauteur / 2 + distSecurite
+
+    //zone cliquable du serpent
+    //plan.fill(255, 255, 255, 100)
+    //plan.noStroke()
+    //plan.rect(aCoordSerpent[0], aCoordSerpent[1], aCoordSerpent[2] - aCoordSerpent[0], aCoordSerpent[3] - aCoordSerpent[1])
+
+    // Gestion de l'animation
+    if (serpentAnimating) {
+        serpentAnimProgress += 0.015
+
+        if (serpentAnimProgress >= 1) {
+            serpentAnimating = false
+            serpentAnimProgress = 0
+        }
+    }
+
     plan.push()
     plan.translate(x, y)
     plan.scale(echelle)
@@ -157,16 +243,58 @@ function dessinerSerpent(plan, x, y, echelle) {
     plan.bezierVertex(120, -10, 160, 30, 200, 0)
     plan.endShape()
 
+    // Stocker les coordonnées de la tête du serpent (après scale)
+    aCoordTeteSerpent[0] = x + 200 * echelle
+    aCoordTeteSerpent[1] = y
+
     // Tête du serpent
     plan.noStroke()
     plan.fill(90, 130, 110)
     plan.ellipse(200, 0, 30, 20)
 
     plan.pop()
+
+    // Rectangle rouge animé (après pop pour ne pas être affecté par scale)
+    if (serpentAnimating) {
+        const ROUGE = [220, 50, 50]
+
+        // Direction : 1 (aller) ou -1 (retour) pour la langue
+        const dir = serpentAnimProgress < 0.5 ? 1 : -1
+
+        // Taille du rectangle
+        const rectLargeur = 20 + 10 * serpentAnimProgress * dir
+        const rectHauteur = 10
+
+        plan.fill(ROUGE[0], ROUGE[1], ROUGE[2])
+        plan.noStroke()
+        //Dessin de la langue du serpent
+        plan.rect(aCoordTeteSerpent[0] + 10, aCoordTeteSerpent[1] - rectHauteur / 2, rectLargeur, rectHauteur, 5)
+    }
 }
 
 // Avion accidenté dans le sable
 function dessinerAvionAccidente(plan, x, y, echelle) {
+    // Définir la zone cliquable de l'avion
+    const avionLargeur = 260 * echelle
+    const avionHauteur = 120 * echelle
+    const distSecurite = 20
+
+    // Calcul approximatif avec la rotation de -0.25
+    aCoordAvion[0] = x - avionLargeur - distSecurite
+    aCoordAvion[1] = y - avionHauteur / 2 - distSecurite
+    aCoordAvion[2] = x + avionLargeur / 2 + distSecurite
+    aCoordAvion[3] = y + avionHauteur / 2 + distSecurite
+
+    // Gestion de l'animation
+    if (avionAnimating) {
+        avionAnimProgress += 0.015
+
+        if (avionAnimProgress >= 1) {
+            avionAnimating = false
+            avionAnimProgress = 0
+        }
+    }
+
     plan.push()
     plan.translate(x, y)
     plan.scale(echelle)
@@ -176,7 +304,7 @@ function dessinerAvionAccidente(plan, x, y, echelle) {
     plan.stroke(50, 50, 70, 200)
     plan.strokeWeight(4)
 
-    // Fuselage principal (gris foncé)
+    // Cors de l'avion principal (gris foncé)
     plan.fill(80, 80, 100)
     plan.rect(-180, -40, 260, 80, 30)
 
@@ -192,4 +320,62 @@ function dessinerAvionAccidente(plan, x, y, echelle) {
     plan.line(60, 30, 140, 70)
 
     plan.pop()
+
+    // Animation de fumée (après pop pour ne pas être affectée par scale et rotate)
+    if (avionAnimating) {
+        plan.noStroke()
+
+        // 4 nuages de fumée avec des phases décalées
+        for (let i = 0; i < 4; i++) {
+            //on calcule l'avancée de l'animation (modulo 1 pour toujours que ce soit compris entre 0 et 1)
+            const phase = (avionAnimProgress + i * 0.25) % 1
+
+            //monte de 0 à 80px
+            const hauteurFumee = phase * -80
+
+            // Décalage horizontal aléatoire en fonction du numéro de nuage
+            const decalageX = sin(phase * PI * 2 + i) * 15
+
+            //grandit de 15 à 35px
+            const taille = 15 + phase * 20
+
+            // diminue son opacité en partant de 255 (opcacité max)
+            const opacite = 255 * (1 - phase)
+
+            // Couleur grise
+            plan.fill(120, 120, 130, opacite)
+            plan.ellipse(aCoordAvion[2] - 4 * distSecurite + decalageX, aCoordAvion[1] + hauteurFumee, taille, taille)
+        }
+    }
+}
+
+// Détection de clic sur le serpent, le renard et l'avion (appelé depuis sketch.js dans mousePressed)
+function clicScene3(mouseX, mouseY) {
+    const estDansSerpent = mouseX > aCoordSerpent[0] && mouseX < aCoordSerpent[2] && mouseY > aCoordSerpent[1] && mouseY < aCoordSerpent[3]
+    const estDansRenard = mouseX > aCoordRenard[0] && mouseX < aCoordRenard[2] && mouseY > aCoordRenard[1] && mouseY < aCoordRenard[3]
+    const estDansAvion = mouseX > aCoordAvion[0] && mouseX < aCoordAvion[2] && mouseY > aCoordAvion[1] && mouseY < aCoordAvion[3]
+
+    if (estDansSerpent && !serpentAnimating) {
+        console.log('Clic serpent')
+        serpentAnimating = true
+        serpentAnimProgress = 0
+        return true
+    }
+
+    if (estDansRenard && !renardAnimating) {
+        console.log('Clic renard')
+        renardAnimating = true
+        renardAnimProgress = 0
+        renardAnimType = 'queue'
+        return true
+    }
+
+    if (estDansAvion && !avionAnimating) {
+        console.log('Clic avion')
+        avionAnimating = true
+        avionAnimProgress = 0
+        return true
+    }
+
+    return false
 }

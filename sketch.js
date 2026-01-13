@@ -123,11 +123,23 @@ function mousePressed() {
     // Bouton droit (>)
     if (dist(mouseX, mouseY, tailleCanva[0] - tailleBtn, center[1]) < tailleBtn / 2) {
         livre.changePage(1)
+        return
     }
 
     // Bouton gauche (<)
     if (dist(mouseX, mouseY, tailleBtn, center[1]) < tailleBtn / 2) {
         livre.changePage(-1)
+        return
+    }
+
+    // Clic sur l'avion (scène 1)
+    if (livre.numPage === 1) {
+        clicAvionScene1(mouseX, mouseY)
+    }
+
+    // Clic sur le serpent ou le renard (scène 3)
+    if (livre.numPage === 3) {
+        clicScene3(mouseX, mouseY)
     }
 }
 
