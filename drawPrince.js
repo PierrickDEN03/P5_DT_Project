@@ -73,12 +73,18 @@ function dessinerPetitPrince(plan, x, y, echelle = 1) {
     plan.ellipse(-8, -142, 20, 16)
 
     // Écharpe qui vole
+    const t = frameCount * 0.08
+    const baseWave = sin(t) * 4
+    const midWave = sin(t + 0.7) * 6
+    const tipWave = sin(t + 1.3) * 10
+    const tipSway = sin(t + 1.3) * 6
+
     plan.beginShape()
-    plan.vertex(-18, -142)
-    plan.bezierVertex(-85, -150, -140, -125, -175, -95)
-    plan.bezierVertex(-150, -78, -112, -82, -90, -70)
-    plan.bezierVertex(-75, -60, -78, -36, -98, -28)
-    plan.bezierVertex(-50, -22, -24, -68, -18, -142)
+    plan.vertex(-18, -142 + baseWave)
+    plan.bezierVertex(-85, -150 + baseWave, -140, -125 + midWave, -175 + tipSway, -95 + tipWave)
+    plan.bezierVertex(-150 + tipSway * 0.6, -78 + tipWave * 0.6, -112, -82 + midWave, -90, -70 + baseWave)
+    plan.bezierVertex(-75, -60 + midWave, -78, -36 + baseWave, -98 + tipSway * 0.5, -28 + tipWave * 0.4)
+    plan.bezierVertex(-50, -22 + baseWave, -24, -68 + midWave, -18, -142 + baseWave)
     plan.endShape(CLOSE)
 
     // MANTEAU VERT

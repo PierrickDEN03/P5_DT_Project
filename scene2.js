@@ -4,6 +4,9 @@
 let etoiles2 = []
 let meteores2 = []
 let isInit2 = false
+let scene2MainAsteroid = null
+let scene2SmallAsteroids = []
+const scene2AsteroidPadding = 40
 
 function setupScene2(plan) {
     // Initialisation au premier appel des étoiles
@@ -11,6 +14,8 @@ function setupScene2(plan) {
         initEtoiles(plan, etoiles2)
         isInit2 = true
     }
+
+    initScene2Asteroids(plan)
     // Fond du ciel nocturne
     plan.background(8, 10, 18)
 
@@ -23,43 +28,137 @@ function setupScene2(plan) {
     dessinerAsteroide2(plan)
 
     //Pour les monsieurs
-    dessinerAsteroïdesFlottants(plan)
+    dessinerAsteroidesFlottants(plan)
 
     initPrinceScene2(plan)
     assombrissement(plan)
 }
 
 function dessinerAsteroide2(plan) {
-    const m = obtenirMetriquesAsteroide(plan, 0.52, 0.57, 0.2, 0.14)
+    const m = getScene2MainAsteroidMetrics(plan)
     dessinerAsteroideComplet(plan, m)
 }
 
-// Création du petit prince
+function initScene2Asteroids(plan) {
+    if (!scene2MainAsteroid) {
+        const m = obtenirMetriquesAsteroide(plan, 0.52, 0.57, 0.2, 0.14)
+        scene2MainAsteroid = {
+            x: m.centreX,
+            y: m.centreY,
+            rx: m.rayonX,
+            ry: m.rayonY,
+        }
+    }
+
+    if (scene2SmallAsteroids.length === 0) {
+        const positions = [
+            { x: 0.1, y: 0.2 },
+            { x: 0.25, y: 0.15 },
+            { x: 0.25, y: 0.3 },
+            { x: 0.9, y: 0.2 },
+            { x: 0.75, y: 0.15 },
+            { x: 0.75, y: 0.3 },
+        ]
+
+        scene2SmallAsteroids = positions.map((pos, index) => {
+            return {
+                x: plan.width * pos.x,
+                y: plan.height * pos.y,
+                size: plan.width * 0.085,
+                index,
+            }
+        })
+    }
+}
+
+function getScene2MainAsteroidMetrics(plan) {
+    initScene2Asteroids(plan)
+    return {
+        centreX: scene2MainAsteroid.x,
+        centreY: scene2MainAsteroid.y,
+        rayonX: scene2MainAsteroid.rx,
+        rayonY: scene2MainAsteroid.ry,
+    }
+}
+
+function scene2PickAsteroid(x, y) {
+    initScene2Asteroids({ width, height })
+
+    for (let i = 0; i < scene2SmallAsteroids.length; i++) {
+        const asteroid = scene2SmallAsteroids[i]
+        const halfW = asteroid.size * 1.1
+        const halfH = asteroid.size * 0.8
+        const dx = x - asteroid.x
+        const dy = y - asteroid.y
+        const hit = (dx * dx) / (halfW * halfW) + (dy * dy) / (halfH * halfH) <= 1
+
+        if (hit) {
+            return {
+                scene: 2,
+                type: 'small',
+                index: i,
+                offsetX: dx,
+                offsetY: dy,
+                halfW,
+                halfH,
+            }
+        }
+    }
+
+    const mainHalfW = scene2MainAsteroid.rx * 1.05
+    const mainHalfH = scene2MainAsteroid.ry * 1.05
+    const mainDx = x - scene2MainAsteroid.x
+    const mainDy = y - scene2MainAsteroid.y
+    const mainHit = (mainDx * mainDx) / (mainHalfW * mainHalfW) + (mainDy * mainDy) / (mainHalfH * mainHalfH) <= 1
+
+    if (!mainHit) {
+        return null
+    }
+
+    return {
+        scene: 2,
+        type: 'main',
+        offsetX: mainDx,
+        offsetY: mainDy,
+        halfW: mainHalfW,
+        halfH: mainHalfH,
+    }
+}
+
+function scene2DragAsteroid(drag, x, y) {
+    const minX = scene2AsteroidPadding + drag.halfW
+    const maxX = width - scene2AsteroidPadding - drag.halfW
+    const minY = scene2AsteroidPadding + drag.halfH
+    const maxY = height - scene2AsteroidPadding - drag.halfH
+
+    if (drag.type === 'small') {
+        const asteroid = scene2SmallAsteroids[drag.index]
+        asteroid.x = constrain(x - drag.offsetX, minX, maxX)
+        asteroid.y = constrain(y - drag.offsetY, minY, maxY)
+    } else {
+        scene2MainAsteroid.x = constrain(x - drag.offsetX, minX, maxX)
+        scene2MainAsteroid.y = constrain(y - drag.offsetY, minY, maxY)
+    }
+}
+
+// Cr‚ation du petit prince
 function initPrinceScene2(plan) {
-    const m = obtenirMetriquesAsteroide(plan)
+    const m = getScene2MainAsteroidMetrics(plan)
     const baseX = m.centreX - m.rayonX * 0.35
     const echelle = plan.width * 0.0002
     //Centre dans l'asteroide
-    const baseY = m.centreY - m.rayonY * 2
+    const baseY = m.centreY - m.rayonY * 1
     // Appel de la fonction du fichier drawPrince.js
     dessinerPetitPrince(plan, baseX, baseY, echelle)
 }
 
-// Création des 6 astéroides pour les 6 personnes
-function dessinerAsteroïdesFlottants(plan) {
-    // Positions des 6 petits astéroïdes
-    const positions = [
-        { x: 0.1, y: 0.2 },
-        { x: 0.25, y: 0.15 },
-        { x: 0.25, y: 0.3 },
-        { x: 0.9, y: 0.2 },
-        { x: 0.75, y: 0.15 },
-        { x: 0.75, y: 0.3 },
-    ]
+// Cr‚ation des 6 ast‚roides pour les 6 personnes
+function dessinerAsteroidesFlottants(plan) {
+    initScene2Asteroids(plan)
 
-    for (let i = 0; i < positions.length; i++) {
-        const pos = positions[i]
-        dessinerPetitAsteroide(plan, plan.width * pos.x, plan.height * pos.y, plan.width * 0.085, i)
+    for (let i = 0; i < scene2SmallAsteroids.length; i++) {
+        const asteroid = scene2SmallAsteroids[i]
+        dessinerPetitAsteroide(plan, asteroid.x, asteroid.y, asteroid.size, asteroid.index)
     }
 }
 
@@ -227,3 +326,7 @@ function assombrissement(plan) {
     plan.fill(0, 0, 0, 120)
     plan.rect(0, 0, plan.width, plan.height)
 }
+
+
+
+

@@ -201,10 +201,9 @@ function dessinerRenard(plan, x, y, echelle) {
 
 // Serpent
 function dessinerSerpent(plan, x, y, echelle) {
-    // Coordonnées de la tête du serpent [x, y]
     const aCoordTeteSerpent = [0, 0]
 
-    // Définir la zone cliquable du serpent
+    // Zone cliquable
     const serpentLargeur = 280 * echelle
     const serpentHauteur = 60 * echelle
     const distSecurite = 20
@@ -213,64 +212,71 @@ function dessinerSerpent(plan, x, y, echelle) {
     aCoordSerpent[2] = x + serpentLargeur + distSecurite
     aCoordSerpent[3] = y + serpentHauteur / 2 + distSecurite
 
-    //zone cliquable du serpent
-    //plan.fill(255, 255, 255, 100)
-    //plan.noStroke()
-    //plan.rect(aCoordSerpent[0], aCoordSerpent[1], aCoordSerpent[2] - aCoordSerpent[0], aCoordSerpent[3] - aCoordSerpent[1])
-
-    // Gestion de l'animation
+    // Gestion animation
     if (serpentAnimating) {
         serpentAnimProgress += 0.015
-
         if (serpentAnimProgress >= 1) {
             serpentAnimating = false
             serpentAnimProgress = 0
         }
     }
 
+    // ✅ Slither parameters (only when animating)
+    const t = serpentAnimating ? serpentAnimProgress : 0
+
+    // Small forward/back motion (pixels in screen space)
+    const moveX = serpentAnimating ? Math.sin(t * Math.PI) * 10 : 0
+
+    // Body wave (in snake local space, before scaling)
+    const wave = serpentAnimating ? Math.sin(t * Math.PI * 6) * 10 : 0
+
     plan.push()
-    plan.translate(x, y)
+    plan.translate(x + moveX, y)
     plan.scale(echelle)
 
-    // Corps du serpent (courbe ondulante)
+    // Corps (ondulation)
     plan.stroke(70, 90, 80, 200)
     plan.strokeWeight(6)
     plan.noFill()
     plan.beginShape()
     plan.vertex(-80, 20)
-    //Permet plus facilement d'avoir des objets courbés
-    plan.bezierVertex(-20, -10, 20, 40, 80, 10)
-    plan.bezierVertex(120, -10, 160, 30, 200, 0)
+
+    // ✅ Add wave into the bezier control points
+    plan.bezierVertex(-20, -10 + wave, 20, 40 - wave, 80, 10 + wave)
+    plan.bezierVertex(120, -10 - wave, 160, 30 + wave, 200, 0)
+
     plan.endShape()
 
-    // Stocker les coordonnées de la tête du serpent (après scale)
-    aCoordTeteSerpent[0] = x + 200 * echelle
+    // Coord tête (screen space, after moveX)
+    aCoordTeteSerpent[0] = (x + moveX) + 200 * echelle
     aCoordTeteSerpent[1] = y
 
-    // Tête du serpent
+    // Tête
     plan.noStroke()
     plan.fill(90, 130, 110)
     plan.ellipse(200, 0, 30, 20)
 
     plan.pop()
 
-    // Rectangle rouge animé (après pop pour ne pas être affecté par scale)
+    // Langue (comme avant)
     if (serpentAnimating) {
         const ROUGE = [220, 50, 50]
-
-        // Direction : 1 (aller) ou -1 (retour) pour la langue
         const dir = serpentAnimProgress < 0.5 ? 1 : -1
-
-        // Taille du rectangle
         const rectLargeur = 20 + 10 * serpentAnimProgress * dir
         const rectHauteur = 10
 
         plan.fill(ROUGE[0], ROUGE[1], ROUGE[2])
         plan.noStroke()
-        //Dessin de la langue du serpent
-        plan.rect(aCoordTeteSerpent[0] + 10, aCoordTeteSerpent[1] - rectHauteur / 2, rectLargeur, rectHauteur, 5)
+        plan.rect(
+            aCoordTeteSerpent[0] + 10,
+            aCoordTeteSerpent[1] - rectHauteur / 2,
+            rectLargeur,
+            rectHauteur,
+            5
+        )
     }
 }
+
 
 // Avion accidenté dans le sable
 function dessinerAvionAccidente(plan, x, y, echelle) {
@@ -379,3 +385,6 @@ function clicScene3(mouseX, mouseY) {
 
     return false
 }
+
+
+

@@ -64,6 +64,17 @@ function dessinerVolcans(plan, centreX, hauteurY, largeur, hauteur) {
             // Lueur jaune
             plan.fill(245, 170, 90, 200)
             plan.ellipse(volcan.x, volcan.y - hauteur * 0.07, largeur * 0.035, hauteur * 0.035)
+
+            // Vapeur simple
+            const t = frameCount * 0.08
+            plan.noStroke()
+            for (let i = 0; i < 3; i++) {
+                const drift = sin(t + i) * largeur * 0.04
+                const rise = (i + 1) * hauteur * 0.08 + (t * 3) % (hauteur * 0.18)
+                const alpha = 190 - i * 35
+                plan.fill(220, 220, 225, alpha)
+                plan.ellipse(volcan.x + drift, volcan.y - hauteur * 0.14 - rise, largeur * 0.045, hauteur * 0.045)
+            }
         } else {
             // Cratère éteint
             plan.stroke(80, 80, 90, 200)

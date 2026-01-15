@@ -5,9 +5,11 @@
 const tailleCanva = [1100, 700]
 const center = [550, 350]
 const tailleBtn = 60
-let livre
+let currentPage = 0
+const pageCount = 4
 let firstPlan, secondPlan, backgroundPlan
 let imageCouverture
+let dragState = null
 
 //Affichage de façon différente pour le dos du livre (d'où la chaine vide)
 const aTexte = [
@@ -37,7 +39,7 @@ function setup() {
     firstPlan = createGraphics(tailleCanva[0], tailleCanva[1])
     //Plan d'arrière-plan pour la scène
     backgroundPlan = createGraphics(tailleCanva[0], tailleCanva[1])
-    livre = new Livre(secondPlan, imageCouverture)
+    // livre = new Livre(secondPlan, imageCouverture)
 }
 
 function draw() {
@@ -45,7 +47,7 @@ function draw() {
     creerBoutons()
 
     //Affichage de la scène selon le numéro de la page courante
-    switch (livre.numPage) {
+    switch (currentPage) {
         case 0:
             backgroundPlan.clear()
             setupScene0(backgroundPlan)
@@ -68,16 +70,16 @@ function draw() {
             break
         case 4:
             backgroundPlan.clear()
-            setupScene4(backgroundPlan, livre)
+            setupScene4(backgroundPlan)
             break
     }
     //Si on atteint la page de fin, un bouton apparait pour recommencer
-    if (livre.numPage === livre.countPage) {
-        showScene4ResetButton(livre)
+    if (currentPage === pageCount) {
+        showScene4ResetButton()
     } else {
         hideScene4ResetButton()
     }
-    livre.affichePageLivre(secondPlan)
+    secondPlan.clear()
 
     // D'abord l'arrière-plan de la scène, puis le livre, puis les boutons
     image(backgroundPlan, 0, 0)
@@ -94,7 +96,7 @@ function creerBoutons() {
     const greyColor = [80, 80, 80]
 
     // Bouton droit (aller page suivante)
-    const estDernierePage = livre.numPage === livre.countPage
+    const estDernierePage = currentPage === pageCount
     if (estDernierePage) {
         firstPlan.fill(greyColor[0], greyColor[1], greyColor[2])
     } else {
@@ -103,7 +105,7 @@ function creerBoutons() {
     firstPlan.ellipse(tailleCanva[0] - tailleBtn, center[1], tailleBtn, tailleBtn)
 
     // Bouton gauche (aller page précédente)
-    const estPremierePage = livre.numPage === 0
+    const estPremierePage = currentPage === 0
     if (estPremierePage) {
         firstPlan.fill(greyColor[0], greyColor[1], greyColor[2])
     } else {
@@ -122,24 +124,71 @@ function creerBoutons() {
 function mousePressed() {
     // Bouton droit (>)
     if (dist(mouseX, mouseY, tailleCanva[0] - tailleBtn, center[1]) < tailleBtn / 2) {
-        livre.changePage(1)
+        changePage(1)
         return
     }
 
     // Bouton gauche (<)
     if (dist(mouseX, mouseY, tailleBtn, center[1]) < tailleBtn / 2) {
-        livre.changePage(-1)
+        changePage(-1)
         return
     }
 
-    // Clic sur l'avion (scène 1)
-    if (livre.numPage === 1) {
+    if (currentPage === 1) {
+        dragState = scene1PickAsteroid(mouseX, mouseY)
+        if (dragState) {
+            return
+        }
+    }
+
+    if (currentPage === 2) {
+        dragState = scene2PickAsteroid(mouseX, mouseY)
+        if (dragState) {
+            return
+        }
+    }
+
+    // Clic sur l'avion (scŠne 1)
+    if (currentPage === 1) {
         clicAvionScene1(mouseX, mouseY)
     }
 
-    // Clic sur le serpent ou le renard (scène 3)
-    if (livre.numPage === 3) {
+    // Clic sur le serpent ou le renard (scŠne 3)
+    if (currentPage === 3) {
         clicScene3(mouseX, mouseY)
+    }
+}
+
+function mouseDragged() {
+    if (!dragState) {
+        return
+    }
+
+    if (dragState.scene === 1) {
+        scene1DragAsteroid(dragState, mouseX, mouseY)
+    } else if (dragState.scene === 2) {
+        scene2DragAsteroid(dragState, mouseX, mouseY)
+    }
+}
+
+function mouseReleased() {
+    dragState = null
+}
+
+function keyPressed() {
+    if (keyCode === RIGHT_ARROW) {
+        changePage(1)
+        return
+    }
+
+    if (keyCode === LEFT_ARROW) {
+        changePage(-1)
+    }
+}
+function changePage(dir) {
+    const nextPage = currentPage + dir
+    if (nextPage >= 0 && nextPage <= pageCount) {
+        currentPage = nextPage
     }
 }
 
@@ -168,3 +217,7 @@ function displayAnimatedText(plan, texte, numPage, textAlpha) {
 
     plan.text(texte, tailleCanva[0] / 2 - maxWidth / 2, y, maxWidth)
 }
+
+
+
+
