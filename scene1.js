@@ -11,8 +11,6 @@ let avionAnimProgress = 0
 let avionAnimType = 'none' // 'bouge' ou 'helice'
 // Coordonnées de la zone de l'avion [x1, y1, x2, y2]
 let aCoordAvion = [0, 0, 0, 0]
-let scene1Asteroid = null
-const scene1AsteroidPadding = 40
 
 // Fonction principale
 function setupScene1(plan) {
@@ -41,75 +39,19 @@ function setupScene1(plan) {
 }
 
 function dessinerAsteroide(plan) {
-    const m = getScene1AsteroidMetrics(plan)
+    const m = obtenirMetriquesAsteroide(plan, 0.52, 0.5, 0.2, 0.14)
     dessinerAsteroideComplet(plan, m, true)
 }
 
 // Dessin du petit prince
 function initPrinceScene1(plan) {
-    const m = getScene1AsteroidMetrics(plan)
+    const m = obtenirMetriquesAsteroide(plan)
     const baseX = m.centreX - m.rayonX * 0.35
     const echelle = plan.width * 0.00025
-    const baseY = m.centreY - m.rayonY * 1
+    const baseY = m.centreY - m.rayonY * 3
 
     // Appel de la fonction du fichier drawPrince.js
     dessinerPetitPrince(plan, baseX, baseY, echelle)
-}
-
-function initScene1Asteroid(plan) {
-    if (scene1Asteroid) {
-        return
-    }
-
-    const m = obtenirMetriquesAsteroide(plan, 0.52, 0.5, 0.2, 0.14)
-    scene1Asteroid = {
-        x: m.centreX,
-        y: m.centreY,
-        rx: m.rayonX,
-        ry: m.rayonY,
-    }
-}
-
-function getScene1AsteroidMetrics(plan) {
-    initScene1Asteroid(plan)
-    return {
-        centreX: scene1Asteroid.x,
-        centreY: scene1Asteroid.y,
-        rayonX: scene1Asteroid.rx,
-        rayonY: scene1Asteroid.ry,
-    }
-}
-
-function scene1PickAsteroid(x, y) {
-    initScene1Asteroid({ width, height })
-    const halfW = scene1Asteroid.rx * 1.05
-    const halfH = scene1Asteroid.ry * 1.05
-    const dx = x - scene1Asteroid.x
-    const dy = y - scene1Asteroid.y
-    const hit = (dx * dx) / (halfW * halfW) + (dy * dy) / (halfH * halfH) <= 1
-
-    if (!hit) {
-        return null
-    }
-
-    return {
-        scene: 1,
-        type: 'main',
-        offsetX: dx,
-        offsetY: dy,
-        halfW,
-        halfH,
-    }
-}
-
-function scene1DragAsteroid(drag, x, y) {
-    const minX = scene1AsteroidPadding + drag.halfW
-    const maxX = width - scene1AsteroidPadding - drag.halfW
-    const minY = scene1AsteroidPadding + drag.halfH
-    const maxY = height - scene1AsteroidPadding - drag.halfH
-
-    scene1Asteroid.x = constrain(x - drag.offsetX, minX, maxX)
-    scene1Asteroid.y = constrain(y - drag.offsetY, minY, maxY)
 }
 
 // Avion du pilote
@@ -274,4 +216,3 @@ function clicAvionScene1(mouseX, mouseY) {
 
     return false
 }
-

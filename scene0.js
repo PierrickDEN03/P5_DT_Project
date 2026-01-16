@@ -67,22 +67,4 @@ function setupScene0(plan) {
         plan.fill(255, 255, 255, alpha)
         plan.circle(star.x, star.y, star.rayon)
     }
-
-    dessinerCouvertureScene0(plan)
-}
-
-function dessinerCouvertureScene0(plan) {
-    if (!imageCouverture) {
-        return
-    }
-
-    const imgW = plan.width * 0.28
-    const imgH = imgW * (imageCouverture.height / imageCouverture.width)
-    const imgX = plan.width * 0.5
-    const imgY = plan.height * 0.62
-
-    plan.push()
-    plan.imageMode(CENTER)
-    plan.image(imageCouverture, imgX, imgY, imgW, imgH)
-    plan.pop()
 }

@@ -110,14 +110,14 @@ function initLetters(plan) {
 
 //Le bouton de réinitialisation doit être crée qu'une seule fois
 //Il est créé sur le plan principal du sketch (et non sur le plan de la scène courante)
-function showScene4ResetButton() {
+function showScene4ResetButton(livre) {
     const buttonWidth = 190
     if (!resetPageButton4) {
         resetPageButton4 = createButton('Retour à la couverture')
         resetPageButton4.size(buttonWidth, 40)
         //Au clic, on recommence à la page 0
         resetPageButton4.mousePressed(() => {
-            currentPage = 0
+            livre.numPage = 0
         })
     }
 
@@ -133,4 +133,3 @@ function hideScene4ResetButton() {
         resetPageButton4.hide()
     }
 }
-

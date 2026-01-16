@@ -81,67 +81,63 @@ function getScene2MainAsteroidMetrics(plan) {
     }
 }
 
-function scene2PickAsteroid(x, y) {
+// Sélectionne un petit astéroïde cliquable pour le drag & drop
+function scene2SelectionnerAsteroide(x, y) {
+    // S'assurer que les astéroïdes sont bien initialisés
     initScene2Asteroids({ width, height })
 
+    // Parcours des petits astéroïdes pour détecter un clic
     for (let i = 0; i < scene2SmallAsteroids.length; i++) {
         const asteroid = scene2SmallAsteroids[i]
-        const halfW = asteroid.size * 1.1
-        const halfH = asteroid.size * 0.8
-        const dx = x - asteroid.x
-        const dy = y - asteroid.y
-        const hit = (dx * dx) / (halfW * halfW) + (dy * dy) / (halfH * halfH) <= 1
+        const demiLargeur = asteroid.size * 1.1
+        const demiHauteur = asteroid.size * 0.8
+        const decalageX = x - asteroid.x
+        const decalageY = y - asteroid.y
+        // Test de collision ellipse pour cet astéroïde
+        const estTouche = (decalageX * decalageX) / (demiLargeur * demiLargeur) + (decalageY * decalageY) / (demiHauteur * demiHauteur) <= 1
 
-        if (hit) {
+        if (estTouche) {
             return {
                 scene: 2,
-                type: 'small',
-                index: i,
-                offsetX: dx,
-                offsetY: dy,
-                halfW,
-                halfH,
+                typeAsteroide: 'small',
+                indice: i,
+                decalageX,
+                decalageY,
+                demiLargeur,
+                demiHauteur,
             }
         }
     }
 
-    const mainHalfW = scene2MainAsteroid.rx * 1.05
-    const mainHalfH = scene2MainAsteroid.ry * 1.05
-    const mainDx = x - scene2MainAsteroid.x
-    const mainDy = y - scene2MainAsteroid.y
-    const mainHit = (mainDx * mainDx) / (mainHalfW * mainHalfW) + (mainDy * mainDy) / (mainHalfH * mainHalfH) <= 1
+    // On ignore l'astéroïde principal pour le drag & drop (non déplaçable)
+    return null
+}
 
-    if (!mainHit) {
-        return null
-    }
+// Déplace l'astéroïde sélectionné (les petits uniquement) en respectant les limites du canva
+function scene2DeplacerAsteroide(selection, x, y) {
+    const minX = scene2AsteroidPadding + selection.demiLargeur
+    const maxX = width - scene2AsteroidPadding - selection.demiLargeur
+    const minY = scene2AsteroidPadding + selection.demiHauteur
+    const maxY = height - scene2AsteroidPadding - selection.demiHauteur
 
-    return {
-        scene: 2,
-        type: 'main',
-        offsetX: mainDx,
-        offsetY: mainDy,
-        halfW: mainHalfW,
-        halfH: mainHalfH,
+    //Small pour petits astéroides, on avait pensé à le faire pour le grand aussi mais ça ne s'est pas fait
+    if (selection.typeAsteroide === 'small') {
+        const asteroid = scene2SmallAsteroids[selection.indice]
+        // Repositionnement du petit astéroïde avec limites écran
+        asteroid.x = constrain(x - selection.decalageX, minX, maxX)
+        asteroid.y = constrain(y - selection.decalageY, minY, maxY)
     }
 }
 
-function scene2DragAsteroid(drag, x, y) {
-    const minX = scene2AsteroidPadding + drag.halfW
-    const maxX = width - scene2AsteroidPadding - drag.halfW
-    const minY = scene2AsteroidPadding + drag.halfH
-    const maxY = height - scene2AsteroidPadding - drag.halfH
-
-    if (drag.type === 'small') {
-        const asteroid = scene2SmallAsteroids[drag.index]
-        asteroid.x = constrain(x - drag.offsetX, minX, maxX)
-        asteroid.y = constrain(y - drag.offsetY, minY, maxY)
-    } else {
-        scene2MainAsteroid.x = constrain(x - drag.offsetX, minX, maxX)
-        scene2MainAsteroid.y = constrain(y - drag.offsetY, minY, maxY)
-    }
+function scene2PickAsteroid(x, y) {
+    return scene2SelectionnerAsteroide(x, y)
 }
 
-// Cr‚ation du petit prince
+function scene2DragAsteroid(selection, x, y) {
+    return scene2DeplacerAsteroide(selection, x, y)
+}
+
+// Création du petit prince
 function initPrinceScene2(plan) {
     const m = getScene2MainAsteroidMetrics(plan)
     const baseX = m.centreX - m.rayonX * 0.35
@@ -152,7 +148,7 @@ function initPrinceScene2(plan) {
     dessinerPetitPrince(plan, baseX, baseY, echelle)
 }
 
-// Cr‚ation des 6 ast‚roides pour les 6 personnes
+// Création des 6 astéroides pour les 6 personnes
 function dessinerAsteroidesFlottants(plan) {
     initScene2Asteroids(plan)
 
@@ -326,7 +322,3 @@ function assombrissement(plan) {
     plan.fill(0, 0, 0, 120)
     plan.rect(0, 0, plan.width, plan.height)
 }
-
-
-
-
